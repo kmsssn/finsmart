@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import the styles from your existing styles.css file */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Дополнительные стили */
+.bg-gradient-fancy {
+  background-image: linear-gradient(to bottom right, #ede9fe, #ffffff, #dbeafe);
+  background-blend-mode: overlay;
+  background-color: rgba(255, 255, 255, 0.5); 
+  border-radius: 2%;
+}
+
+.dark .bg-gradient-fancy {
+  background-image: linear-gradient(to bottom right, #5e60ce, #1a1b26, #3b5bdb);
+  background-blend-mode: overlay;
+  background-color: rgba(26, 27, 38, 0.6); /* Тёмный полупрозрачный фон */
+  border-radius: 2%;
+}
+
+/* Темная тема */
+.dark body {
+  background-color: #1a1b26;
+  color: #c0caf5;
+}
+
+.dark .bg-white {
+  background-color: #1a1b26;
+}
+
+.dark .text-gray-700 {
+  color: #c0caf5;
+}
+
+.dark .text-gray-600 {
+  color: #a9b1d6;
+}
+
+.dark .text-gray-800 {
+  color: #c0caf5;
+}
+
+.dark .border-gray-200 {
+  border-color: #2f3146;
+}
+
+.dark .bg-gray-50 {
+  background-color: #24283b;
+}
+
+.dark .bg-gray-100 {
+  background-color: #2f3146;
+}
+
+.dark .bg-gray-200 {
+  background-color: #414868;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #2f3146;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: #414868;
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(26, 27, 38, 0.8);
+}
+
+.dark .shadow-md, .dark .shadow-lg, .dark .shadow-xl, .dark .shadow-2xl {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+/* Обновленные градиенты */
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #7aa2f7 0%, #a9c0ff 100%);
+}
+
+.bg-gradient-secondary {
+  background: linear-gradient(135deg, #bb9af7 0%, #d0b6fa 100%);
+}
+
+.bg-gradient-pastel {
+  background: linear-gradient(135deg, #dbeafe 0%, #e9d5ff 50%, #ffffff 100%);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #36b37e 0%, #79f2c0 100%);
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #f7768e 0%, #faa9b8 100%);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Классы анимаций */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Стили для круговых диаграмм */
+.recharts-sector:hover {
+  transform: scale(1.05) translateY(-3px);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+  transition: all 0.3s ease;
+}
+
+.card {
+  @apply bg-white/80 backdrop-blur-md rounded-3xl shadow-md p-6 transition-all duration-300;
+}
+
+.card:hover {
+  @apply shadow-xl transform -translate-y-1;
+}
+
+/* Градиентный текст */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text;
+}
+
+/* Градиентные кнопки */
+.btn-gradient {
+  @apply bg-gradient-to-r from-primary to-secondary text-white transition-all duration-300;
+}
+
+.btn-gradient:hover {
+  @apply shadow-lg transform scale-105;
+}
+
+.btn-gradient:active {
+  @apply transform scale-95;
+}
+
+
+.weather-dropdown {
+  z-index: 100;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  width: 18rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dark .weather-dropdown {
+  background-color: #1a1b26;
+  border-color: #4b5563;
+}
+
+.navbar {
+  z-index: 50;
+}
+
+.dashboard-header {
+  position: relative;
+  z-index: 10;
+}
+
+.dashboard-content {
+  position: relative;
+  z-index: 5;
+}
+
+.modal-overlay {
+  z-index: 100;
+}
+
+.location-dropdown, 
+.country-dropdown {
+  position: absolute;
+  z-index: 50;
+}
+
+.mobile-menu {
+  z-index: 40;
+}
+
+.weather-display-wrapper {
+  position: relative;
+  z-index: 15;
+}
+
+.weather-display {
+  position: relative;
+}
+
+.z-1 { z-index: 1; }
+.z-10 { z-index: 10; }
+.z-20 { z-index: 20; }
+.z-30 { z-index: 30; }
+.z-40 { z-index: 40; }
+.z-50 { z-index: 50; }
+.z-auto { z-index: auto; }

@@ -1,30 +1,28 @@
-
-const API_KEY = '5b2c0943b88c5134e26983b9'; // Замените на ваш API ключ от ExchangeRate-API
-const BASE_URL = 'https://api.exchangerate-api.com/v4/latest/';
+// src/utils/exchange-rate-api.js
 
 const FALLBACK_RATES = {
   KZT: {
     KZT: 1,
-    USD: 0.0021, // 1 KZT = 0.0021 USD
-    EUR: 0.0019, // 1 KZT = 0.0019 EUR
-    RUB: 0.19    // 1 KZT = 0.19 RUB
+    USD: 1/475.0,   // Очень точный курс: 1 USD = 475 KZT
+    EUR: 1/510.0,   // 1 EUR = 510 KZT
+    RUB: 1/5.12     // 1 RUB = 5.12 KZT
   },
   USD: {
-    KZT: 476,    // 1 USD = 476 KZT
+    KZT: 475.0,     // 1 USD = 475 KZT
     USD: 1,
-    EUR: 0.92,   // 1 USD = 0.92 EUR
-    RUB: 90.32   // 1 USD = 90.32 RUB
+    EUR: 0.92,      // 1 USD = 0.92 EUR
+    RUB: 92.7       // 1 USD = 92.7 RUB
   },
   EUR: {
-    KZT: 516,    // 1 EUR = 516 KZT
-    USD: 1.09,   // 1 EUR = 1.09 USD
+    KZT: 510.0,     // 1 EUR = 510 KZT
+    USD: 1.087,     // 1 EUR = 1.087 USD
     EUR: 1,
-    RUB: 98.17   // 1 EUR = 98.17 RUB
+    RUB: 100.7      // 1 EUR = 100.7 RUB
   },
   RUB: {
-    KZT: 5.27,   // 1 RUB = 5.27 KZT
-    USD: 0.011,  // 1 RUB = 0.011 USD
-    EUR: 0.010,  // 1 RUB = 0.010 EUR
+    KZT: 5.12,      // 1 RUB = 5.12 KZT
+    USD: 0.0108,    // 1 RUB = 0.0108 USD
+    EUR: 0.0099,    // 1 RUB = 0.0099 EUR
     RUB: 1
   }
 };
@@ -36,7 +34,7 @@ const FALLBACK_RATES = {
  */
 const getExchangeRates = async (baseCurrency) => {
   try {
-    const response = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
+    const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${baseCurrency}`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch exchange rates');
@@ -57,10 +55,11 @@ const getExchangeRates = async (baseCurrency) => {
     return {
       base: baseCurrency,
       rates: filteredRates,
-      lastUpdate: data.time_last_update_utc || new Date().toISOString()
+      lastUpdate: data.date || new Date().toISOString(),
+      isFallback: false
     };
   } catch (error) {
-    console.error('Error fetching exchange rates, using fallback rates:', error);
+    console.warn('Error fetching exchange rates, using fallback rates:', error);
     
     // Return fallback rates
     return {
@@ -82,9 +81,10 @@ const getExchangeRates = async (baseCurrency) => {
 export const convertCurrencyWithCurrentRate = async (amount, fromCurrency, toCurrency) => {
   if (fromCurrency === toCurrency) {
     return {
-      amount: amount,
+      amount: Number(amount),
       rate: 1,
-      lastUpdate: new Date().toISOString()
+      lastUpdate: new Date().toISOString(),
+      isFallback: false
     };
   }
   
@@ -97,18 +97,22 @@ export const convertCurrencyWithCurrentRate = async (amount, fromCurrency, toCur
     }
     
     const rate = exchangeData.rates[toCurrency];
-    const convertedAmount = amount * rate;
     
-    // Round based on currency type
-    let roundedAmount;
-    if (toCurrency === 'USD' || toCurrency === 'EUR') {
-      roundedAmount = Math.round(convertedAmount * 100) / 100;
+    // Используем высокую точность для промежуточных вычислений
+    const convertedAmount = Number(amount) * rate;
+    
+    // Применяем минимальное округление только для отображения
+    let finalAmount;
+    if (toCurrency === 'KZT' || toCurrency === 'RUB') {
+      // Для валют с целыми числами храним с минимальной точностью
+      finalAmount = Math.round(convertedAmount * 100) / 100;
     } else {
-      roundedAmount = Math.round(convertedAmount);
+      // Для USD/EUR используем максимальную точность
+      finalAmount = Math.round(convertedAmount * 100000000) / 100000000;
     }
     
     return {
-      amount: roundedAmount,
+      amount: finalAmount,
       rate: rate,
       lastUpdate: exchangeData.lastUpdate,
       isFallback: exchangeData.isFallback || false
@@ -133,7 +137,17 @@ export const getCurrencyConversionInfo = async (fromCurrency, toCurrency) => {
   try {
     const result = await convertCurrencyWithCurrentRate(1, fromCurrency, toCurrency);
     
-    let info = `1 ${fromCurrency} = ${result.amount} ${toCurrency}`;
+    // Форматируем курс с нужной точностью для отображения
+    let formattedRate;
+    if (result.amount > 100) {
+      formattedRate = result.amount.toFixed(2);
+    } else if (result.amount > 1) {
+      formattedRate = result.amount.toFixed(4);
+    } else {
+      formattedRate = result.amount.toFixed(6);
+    }
+    
+    let info = `1 ${fromCurrency} = ${formattedRate} ${toCurrency}`;
     
     if (result.isFallback) {
       info += ' (приблизительный курс)';

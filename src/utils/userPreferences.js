@@ -1,5 +1,4 @@
 // src/utils/userPreferences.js
-import { convertCurrency } from './currencyConverter';
 
 const PREFERENCES_KEY = 'user_preferences';
 
@@ -34,6 +33,10 @@ export const saveUserPreferences = (preferences) => {
     const currentPreferences = loadUserPreferences();
     const updatedPreferences = { ...currentPreferences, ...preferences };
     localStorage.setItem(PREFERENCES_KEY, JSON.stringify(updatedPreferences));
+    
+    // Dispatch custom event for WeatherDisplay refresh
+    window.dispatchEvent(new Event('storage'));
+    
     return updatedPreferences;
   } catch (error) {
     console.error('Error saving user preferences:', error);
@@ -67,46 +70,4 @@ export const setUserCity = (city) => {
 export const getUserCurrency = () => {
   const preferences = loadUserPreferences();
   return preferences.currency;
-};
-
-// Update user currency preference and convert balance
-export const setUserCurrency = (newCurrency) => {
-  const currentPreferences = loadUserPreferences();
-  const oldCurrency = currentPreferences.currency;
-  
-  // Save new currency preference
-  saveUserPreferences({ currency: newCurrency });
-  
-  // Convert balance if currency changed
-  if (oldCurrency !== newCurrency) {
-    try {
-      // Get current balance
-      const currentBalance = JSON.parse(localStorage.getItem('balance')) || 0;
-      
-      // Convert balance to new currency
-      const convertedBalance = convertCurrency(currentBalance, oldCurrency, newCurrency);
-      
-      // Save converted balance
-      localStorage.setItem('balance', JSON.stringify(convertedBalance));
-      
-      // Convert all transaction amounts
-      const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-      
-      if (transactions.length > 0) {
-        const convertedTransactions = transactions.map(transaction => ({
-          ...transaction,
-          amount: convertCurrency(transaction.amount, oldCurrency, newCurrency)
-        }));
-        
-        // Save converted transactions
-        localStorage.setItem('transactions', JSON.stringify(convertedTransactions));
-      }
-      
-      console.log(`Currency changed from ${oldCurrency} to ${newCurrency}. Balance converted.`);
-    } catch (error) {
-      console.error('Error converting currency values:', error);
-    }
-  }
-  
-  return currentPreferences;
 };

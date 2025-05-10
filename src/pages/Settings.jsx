@@ -1,4 +1,4 @@
-// src/pages/Settings.jsx - исправленная версия
+// src/pages/Settings.jsx - исправленная версия с уведомлениями
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
@@ -10,11 +10,11 @@ import NotificationModal from '../components/UI/NotificationModal';
 import * as Icons from 'react-icons/fa';
 import { loadUserPreferences, saveUserPreferences, setUserCountry, setUserCity } from '../utils/userPreferences';
 import { COUNTRIES_WITH_CITIES } from '../components/UI/CountrySelector';
-import { getCurrencyConversionInfo } from '../utils/exchange-rate-api';
+import { formatAmount } from '../utils/formatters';
 
 const Settings = () => {
   const { categories } = useSelector((state) => state.categories);
-  const { transactions } = useSelector((state) => state.transactions);
+  const { transactions, balance } = useSelector((state) => state.transactions);
   const dispatch = useDispatch();
   const location = useLocation();
   
@@ -35,6 +35,15 @@ const Settings = () => {
   
   // User preferences
   const [userPreferences, setUserPreferences] = useState(loadUserPreferences());
+  
+  // State for notifications
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    autoClose: true
+  });
   
   const iconList = [
     'FaHome', 'FaCar', 'FaUtensils', 'FaShoppingCart', 'FaBus',
@@ -184,35 +193,95 @@ const Settings = () => {
     }
   };
   
+  // Обработка изменения валюты с конвертацией
 // Обработка изменения валюты с конвертацией
   const handleCurrencyChange = async (newCurrency) => {
     try {
       const oldCurrency = userPreferences.currency;
       
-      // Используем thunk action для правильной конвертации
+      // Show loading notification
+      setNotification({
+        isOpen: true,
+        type: 'info',
+        title: 'Конвертация валюты',
+        message: `Меняем валюту с ${oldCurrency} на ${newCurrency}...`,
+        autoClose: false
+      });
+      
+      // Use thunk action for proper conversion
       const result = await dispatch(changeCurrency(newCurrency));
       
+      // Close loading notification
+      setNotification(prev => ({ ...prev, isOpen: false }));
+      
       if (result?.success) {
-        // Обновляем пользовательские настройки
+        // Update user preferences
         updateUserPreferences('currency', newCurrency);
         
-        // Показываем красивое уведомление
+        // Show success notification with detailed info
+        let rateInfo = [];
+        rateInfo.push(`Курс: 1 ${result.oldCurrency} = ${result.rate.toFixed(8)} ${result.newCurrency}`);
+        
+        if (result.usedSavedRate) {
+          rateInfo.push('Используется сохранённый курс для обеспечения обратимости конвертации');
+        } else {
+          rateInfo.push('Использован текущий курс из API');
+        }
+        
+        // Проверяем на кратную конвертацию
+        const lastConversion = localStorage.getItem('last_currency_conversion');
+        if (lastConversion) {
+          const parsed = JSON.parse(lastConversion);
+          if (parsed.from === newCurrency && parsed.to === oldCurrency && 
+              Date.now() - parsed.timestamp < 5 * 60 * 1000) { // 5 минут
+            rateInfo.push('⚠️ Обнаружена повторная конвертация назад. Используется сохранённый курс для максимальной точности.');
+          }
+        }
+        
+        // Сохраняем информацию о текущей конвертации
+        localStorage.setItem('last_currency_conversion', JSON.stringify({
+          from: oldCurrency,
+          to: newCurrency,
+          timestamp: Date.now()
+        }));
+        
         setNotification({
           isOpen: true,
           type: 'success',
           title: 'Валюта успешно изменена',
-          message: `Валюта изменена с ${oldCurrency} на ${newCurrency}. Курс: 1 ${oldCurrency} = ${result.rate} ${newCurrency}${result.isFallback ? ' (использованы приблизительные курсы)' : ''}`
+          message: `Конвертация с ${result.oldCurrency} на ${result.newCurrency}
+            
+            Баланс: ${formatAmount(result.oldBalance)} → ${formatAmount(result.newBalance)}
+            
+            ${rateInfo.join('\n')}
+            
+            Все транзакции были автоматически конвертированы.`,
+          autoClose: true,
+          duration: 6000
         });
       } else {
-        throw new Error('Ошибка конвертации');
+        // Show error notification
+        setNotification({
+          isOpen: true,
+          type: 'error',
+          title: 'Ошибка конвертации',
+          message: result?.error || 'Произошла ошибка при конвертации валюты. Попробуйте снова.',
+          autoClose: true
+        });
       }
     } catch (error) {
       console.error('Error changing currency:', error);
+      
+      // Close any open notifications
+      setNotification(prev => ({ ...prev, isOpen: false }));
+      
+      // Show error notification
       setNotification({
         isOpen: true,
         type: 'error',
-        title: 'Ошибка конвертации',
-        message: 'Произошла ошибка при конвертации валюты. Повторите попытку позже.'
+        title: 'Ошибка',
+        message: 'Произошла ошибка при изменении валюты. Проверьте подключение к интернету и попробуйте снова.',
+        autoClose: true
       });
     }
   };
@@ -413,7 +482,8 @@ const Settings = () => {
                 <select
                   value={userPreferences.currency}
                   onChange={(e) => handleCurrencyChange(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+                  disabled={notification.isOpen && notification.title === 'Конвертация валюты'}
                 >
                   {currencies.map((currency) => (
                     <option key={currency.code} value={currency.code}>
@@ -563,6 +633,17 @@ const Settings = () => {
           </form>
         </div>
       </Modal>
+      
+      {/* Уведомление */}
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={() => setNotification(prev => ({ ...prev, isOpen: false }))}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        autoClose={notification.autoClose}
+        duration={notification.duration || 3000}
+      />
     </div>
   );
 };

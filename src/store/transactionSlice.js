@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   transactions: JSON.parse(localStorage.getItem('transactions')) || [],
-  balance: JSON.parse(localStorage.getItem('balance')) || 0,
+  balance: Number(JSON.parse(localStorage.getItem('balance')) || 0),
 };
 
 const transactionSlice = createSlice({
@@ -14,15 +14,16 @@ const transactionSlice = createSlice({
         ...action.payload,
         id: Date.now().toString(),
         date: action.payload.date || new Date().toISOString(),
+        amount: Number(action.payload.amount)
       };
       
       state.transactions.push(newTransaction);
       
-      // Обновление баланса
+      // Обновление баланса с максимальной точностью
       if (newTransaction.type === 'income') {
-        state.balance += Number(newTransaction.amount);
+        state.balance = Number((state.balance + newTransaction.amount).toFixed(8));
       } else {
-        state.balance -= Number(newTransaction.amount);
+        state.balance = Number((state.balance - newTransaction.amount).toFixed(8));
       }
       
       localStorage.setItem('transactions', JSON.stringify(state.transactions));
@@ -34,20 +35,27 @@ const transactionSlice = createSlice({
       if (index !== -1) {
         // Откатываем эффект старой транзакции
         const oldTransaction = state.transactions[index];
+        const oldAmount = Number(oldTransaction.amount);
+        
         if (oldTransaction.type === 'income') {
-          state.balance -= Number(oldTransaction.amount);
+          state.balance = Number((state.balance - oldAmount).toFixed(8));
         } else {
-          state.balance += Number(oldTransaction.amount);
+          state.balance = Number((state.balance + oldAmount).toFixed(8));
         }
         
         // Обновляем транзакцию
-        state.transactions[index] = action.payload;
+        state.transactions[index] = {
+          ...action.payload,
+          amount: Number(action.payload.amount)
+        };
+        
+        const newAmount = Number(action.payload.amount);
         
         // Применяем эффект новой транзакции
         if (action.payload.type === 'income') {
-          state.balance += Number(action.payload.amount);
+          state.balance = Number((state.balance + newAmount).toFixed(8));
         } else {
-          state.balance -= Number(action.payload.amount);
+          state.balance = Number((state.balance - newAmount).toFixed(8));
         }
         
         localStorage.setItem('transactions', JSON.stringify(state.transactions));
@@ -58,13 +66,15 @@ const transactionSlice = createSlice({
       const transaction = state.transactions.find(t => t.id === action.payload);
       
       if (transaction) {
+        const amount = Number(transaction.amount);
+        
         // Правильно откатываем эффект транзакции
         if (transaction.type === 'income') {
           // Если это был доход, ВЫЧИТАЕМ его из баланса
-          state.balance -= Number(transaction.amount);
+          state.balance = Number((state.balance - amount).toFixed(8));
         } else {
           // Если это был расход, ДОБАВЛЯЕМ его обратно к балансу
-          state.balance += Number(transaction.amount);
+          state.balance = Number((state.balance + amount).toFixed(8));
         }
         
         state.transactions = state.transactions.filter(t => t.id !== action.payload);
@@ -74,8 +84,12 @@ const transactionSlice = createSlice({
     },
     updateAllTransactionAmounts: (state, action) => {
       // This action is used when updating currency to apply converted amounts
-      state.transactions = action.payload.transactions;
-      state.balance = action.payload.balance;
+      // Храним с максимальной точностью все значения
+      state.transactions = action.payload.transactions.map(transaction => ({
+        ...transaction,
+        amount: Number(transaction.amount)
+      }));
+      state.balance = Number(action.payload.balance);
       
       localStorage.setItem('transactions', JSON.stringify(state.transactions));
       localStorage.setItem('balance', JSON.stringify(state.balance));

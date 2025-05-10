@@ -1,16 +1,16 @@
+// src/pages/Settings.jsx - исправленная версия
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { addCategory, updateCategory, deleteCategory } from '../store/categorySlice';
 import { changeCurrency } from '../store/currencyActions';
-import { FaPlus, FaEdit, FaTrash, FaTag, FaUser, FaMapMarkerAlt, FaGlobe, FaCalendarAlt, FaGlobeAsia } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaTag, FaUser, FaMapMarkerAlt, FaGlobe, FaCalendarAlt, FaGlobeAsia, FaChevronDown } from 'react-icons/fa';
 import Modal from '../components/UI/Modal';
+import NotificationModal from '../components/UI/NotificationModal';
 import * as Icons from 'react-icons/fa';
-import { loadUserPreferences, saveUserPreferences, setUserCountry } from '../utils/userPreferences';
-import LocationSelector from '../components/UI/LocationSelector';
-import CountrySelector from '../components/UI/CountrySelector';
+import { loadUserPreferences, saveUserPreferences, setUserCountry, setUserCity } from '../utils/userPreferences';
 import { COUNTRIES_WITH_CITIES } from '../components/UI/CountrySelector';
-
+import { getCurrencyConversionInfo } from '../utils/exchange-rate-api';
 
 const Settings = () => {
   const { categories } = useSelector((state) => state.categories);
@@ -104,6 +104,7 @@ const Settings = () => {
     });
   };
   
+  
   // Обработка отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -165,6 +166,55 @@ const Settings = () => {
     const updatedPreferences = { ...userPreferences, [key]: value };
     setUserPreferences(updatedPreferences);
     saveUserPreferences(updatedPreferences);
+    
+    // Специальная обработка для страны и города
+    if (key === 'country') {
+      setUserCountry(value);
+      // При изменении страны устанавливаем первый город из списка
+      const cities = COUNTRIES_WITH_CITIES[value] || [];
+      if (cities.length > 0) {
+        const firstCity = cities[0];
+        const newPreferences = { ...updatedPreferences, city: firstCity };
+        setUserPreferences(newPreferences);
+        saveUserPreferences(newPreferences);
+        setUserCity(firstCity);
+      }
+    } else if (key === 'city') {
+      setUserCity(value);
+    }
+  };
+  
+// Обработка изменения валюты с конвертацией
+  const handleCurrencyChange = async (newCurrency) => {
+    try {
+      const oldCurrency = userPreferences.currency;
+      
+      // Используем thunk action для правильной конвертации
+      const result = await dispatch(changeCurrency(newCurrency));
+      
+      if (result?.success) {
+        // Обновляем пользовательские настройки
+        updateUserPreferences('currency', newCurrency);
+        
+        // Показываем красивое уведомление
+        setNotification({
+          isOpen: true,
+          type: 'success',
+          title: 'Валюта успешно изменена',
+          message: `Валюта изменена с ${oldCurrency} на ${newCurrency}. Курс: 1 ${oldCurrency} = ${result.rate} ${newCurrency}${result.isFallback ? ' (использованы приблизительные курсы)' : ''}`
+        });
+      } else {
+        throw new Error('Ошибка конвертации');
+      }
+    } catch (error) {
+      console.error('Error changing currency:', error);
+      setNotification({
+        isOpen: true,
+        type: 'error',
+        title: 'Ошибка конвертации',
+        message: 'Произошла ошибка при конвертации валюты. Повторите попытку позже.'
+      });
+    }
   };
   
   return (
@@ -311,16 +361,45 @@ const Settings = () => {
                 <FaMapMarkerAlt className="mr-2 text-primary" /> Местоположение
               </h3>
               <div className="mb-4">
-                <label className="block text-gray-700 dark:text-gray-300 mb-2">Город для погоды</label>
-                <div className="flex items-center">
-                  <LocationSelector
-                    currentCity={userPreferences.city}
-                    onCityChange={(city) => updateUserPreferences('city', city)}
-                  />
-                  <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                    Город используется для отображения погоды на главной странице
-                  </span>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2">Страна</label>
+                <div className="relative">
+                  <select
+                    value={userPreferences.country}
+                    onChange={(e) => updateUserPreferences('country', e.target.value)}
+                    className="w-64 max-w-full px-4 py-2 appearance-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {Object.keys(COUNTRIES_WITH_CITIES).map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <FaChevronDown className="text-gray-400" size={12} />
+                  </div>
                 </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 dark:text-gray-300 mb-2">Город для погоды</label>
+                <div className="relative">
+                  <select
+                    value={userPreferences.city}
+                    onChange={(e) => updateUserPreferences('city', e.target.value)}
+                    className="w-64 max-w-full px-4 py-2 appearance-none rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {COUNTRIES_WITH_CITIES[userPreferences.country]?.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <FaChevronDown className="text-gray-400" size={12} />
+                  </div>
+                </div>
+                <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block">
+                  Город используется для отображения погоды на главной странице
+                </span>
               </div>
             </div>
             
@@ -333,7 +412,7 @@ const Settings = () => {
                 <label className="block text-gray-700 dark:text-gray-300 mb-2">Валюта по умолчанию</label>
                 <select
                   value={userPreferences.currency}
-                  onChange={(e) => updateUserPreferences('currency', e.target.value)}
+                  onChange={(e) => handleCurrencyChange(e.target.value)}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   {currencies.map((currency) => (
@@ -342,6 +421,9 @@ const Settings = () => {
                     </option>
                   ))}
                 </select>
+                <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block">
+                  При изменении валюты баланс и все транзакции будут конвертированы по текущему курсу
+                </span>
               </div>
             </div>
             

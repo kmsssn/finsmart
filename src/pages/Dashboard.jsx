@@ -16,12 +16,27 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const { user } = useSelector((state) => state.auth);
+  const [refreshKey, setRefreshKey] = useState(0);
   
   useEffect(() => {
     // Эффект появления при первой загрузке
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
+  }, []);
+
+  // Listen for changes in localStorage to refresh WeatherDisplay
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'user_preferences') {
+        setRefreshKey(prev => prev + 1);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   
   return (
@@ -42,7 +57,7 @@ const Dashboard = () => {
 
           {/* Moved WeatherDisplay to its own div with high z-index */}
           <div className="z-[1000] relative">
-            <WeatherDisplay />
+            <WeatherDisplay key={refreshKey} />
           </div>
         </div>
       </div>
@@ -77,7 +92,7 @@ const Dashboard = () => {
         <div className={`col-span-1 transition-all duration-700 delay-300 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'} z-10`}>
           <Advisor />
           <div className="mt-6">
-            <UserPreferencesSummary />
+            <UserPreferencesSummary key={refreshKey} />
           </div>
         </div>
       </div>

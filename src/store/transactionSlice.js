@@ -33,10 +33,11 @@ const transactionSlice = createSlice({
       
       if (index !== -1) {
         // Откатываем эффект старой транзакции
-        if (state.transactions[index].type === 'income') {
-          state.balance -= Number(state.transactions[index].amount);
+        const oldTransaction = state.transactions[index];
+        if (oldTransaction.type === 'income') {
+          state.balance -= Number(oldTransaction.amount);
         } else {
-          state.balance += Number(state.transactions[index].amount);
+          state.balance += Number(oldTransaction.amount);
         }
         
         // Обновляем транзакцию
@@ -57,10 +58,12 @@ const transactionSlice = createSlice({
       const transaction = state.transactions.find(t => t.id === action.payload);
       
       if (transaction) {
-        // Откатываем эффект транзакции
+        // Правильно откатываем эффект транзакции
         if (transaction.type === 'income') {
+          // Если это был доход, ВЫЧИТАЕМ его из баланса
           state.balance -= Number(transaction.amount);
         } else {
+          // Если это был расход, ДОБАВЛЯЕМ его обратно к балансу
           state.balance += Number(transaction.amount);
         }
         

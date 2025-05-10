@@ -3,47 +3,139 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FaFlag, FaPiggyBank, FaEdit, FaCheck, FaTimes, FaAward } from 'react-icons/fa';
 import { formatAmount } from '../../utils/formatters';
+import { loadUserPreferences } from '../../utils/userPreferences';
+import { convertCurrencyWithCurrentRate } from '../../utils/exchange-rate-api';
 
 const SavingsGoal = () => {
   const [goal, setGoal] = useState(() => {
     const savedGoal = localStorage.getItem('savingsGoal');
-    return savedGoal ? JSON.parse(savedGoal) : { amount: 50000, name: 'Финансовая подушка', current: 0 };
+    return savedGoal ? JSON.parse(savedGoal) : { 
+      amount: 50000, 
+      name: 'Финансовая подушка', 
+      current: 0,
+      currency: 'KZT' // Добавляем валюту цели
+    };
   });
   
   const [isEditing, setIsEditing] = useState(false);
   const [tempGoal, setTempGoal] = useState({ ...goal });
   const [showAnimation, setShowAnimation] = useState(false);
+  const [tempAmount, setTempAmount] = useState(''); // Для правильной работы с инпутом
+  const [isConverting, setIsConverting] = useState(false);
   
   const { balance } = useSelector((state) => state.transactions);
+  const preferences = loadUserPreferences();
+  const currentCurrency = preferences.currency || 'KZT';
   
   // Автоматически обновляем прогресс цели при изменении баланса
   useEffect(() => {
-    if (balance > 0) {
+    if (!isConverting) {
       const prevCurrent = goal.current;
+      // Финансовая подушка не может быть больше текущего баланса
       const newCurrent = Math.min(balance, goal.amount);
-      setGoal(prev => ({ ...prev, current: newCurrent }));
       
-      // Показываем анимацию если был прогресс
-      if (newCurrent > prevCurrent) {
-        setShowAnimation(true);
-        setTimeout(() => setShowAnimation(false), 2000);
+      // Обновляем только если значение изменилось
+      if (newCurrent !== prevCurrent) {
+        setGoal(prev => ({ ...prev, current: newCurrent }));
+        
+        // Показываем анимацию если был прогресс
+        if (newCurrent > prevCurrent) {
+          setShowAnimation(true);
+          setTimeout(() => setShowAnimation(false), 2000);
+        }
       }
     }
-  }, [balance, goal.amount]);
+  }, [balance, goal.amount, isConverting]);
+  
+  // Конвертируем цель при изменении валюты
+  useEffect(() => {
+    const convertGoalCurrency = async () => {
+      // Проверяем, нужна ли конвертация
+      if (!goal.currency || goal.currency === currentCurrency) {
+        // Если валюта цели не установлена, устанавливаем текущую
+        if (!goal.currency) {
+          const updatedGoal = { ...goal, currency: currentCurrency };
+          setGoal(updatedGoal);
+          localStorage.setItem('savingsGoal', JSON.stringify(updatedGoal));
+        }
+        return;
+      }
+      
+      setIsConverting(true);
+      
+      try {
+        console.log(`Converting goal from ${goal.currency} to ${currentCurrency}`);
+        console.log('Original goal:', goal);
+        
+        // Конвертируем сумму цели
+        const amountConversion = await convertCurrencyWithCurrentRate(
+          goal.amount, 
+          goal.currency, 
+          currentCurrency
+        );
+        
+        // Получаем текущий баланс после конвертации валюты
+        const newCurrent = Math.min(balance, amountConversion.amount);
+        
+        // Обновляем цель с новой валютой и текущим балансом
+        const convertedGoal = {
+          ...goal,
+          amount: amountConversion.amount,
+          current: newCurrent,
+          currency: currentCurrency
+        };
+        
+        console.log('Converted goal:', convertedGoal);
+        
+        setGoal(convertedGoal);
+        localStorage.setItem('savingsGoal', JSON.stringify(convertedGoal));
+      } catch (error) {
+        console.error('Error converting goal currency:', error);
+      } finally {
+        setIsConverting(false);
+      }
+    };
+
+    // Добавляем небольшую задержку, чтобы дать время для обновления баланса
+    const timer = setTimeout(convertGoalCurrency, 100);
+    return () => clearTimeout(timer);
+  }, [currentCurrency, balance]);
   
   // Сохраняем цель в localStorage при её изменении
   useEffect(() => {
-    localStorage.setItem('savingsGoal', JSON.stringify(goal));
-  }, [goal]);
+    if (!isConverting) {
+      localStorage.setItem('savingsGoal', JSON.stringify(goal));
+    }
+  }, [goal, isConverting]);
   
   const handleEditSubmit = (e) => {
     e.preventDefault();
-    setGoal(tempGoal);
+    
+    // Преобразуем строку в число, но сохраняем реальное значение
+    const amount = tempAmount === '' ? 0 : Number(tempAmount);
+    
+    // При установке новой суммы цели, текущий прогресс остаётся как min(balance, newAmount)
+    const newCurrent = Math.min(balance, amount);
+    
+    setGoal({
+      ...tempGoal,
+      amount,
+      current: newCurrent,
+      currency: currentCurrency // Сохраняем текущую валюту
+    });
     setIsEditing(false);
+    setTempAmount(''); // Очищаем временное значение
+  };
+  
+  const openEditModal = () => {
+    setIsEditing(true);
+    setTempGoal({ ...goal });
+    // Устанавливаем значение без нуля
+    setTempAmount(goal.amount === 0 ? '' : goal.amount.toString());
   };
   
   // Вычисляем процент выполнения цели
-  const progress = Math.min(Math.round((goal.current / goal.amount) * 100), 100);
+  const progress = goal.amount > 0 ? Math.min(Math.round((goal.current / goal.amount) * 100), 100) : 0;
   
   return (
     <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl p-6 transition-all duration-300 hover:shadow-2xl">
@@ -67,24 +159,32 @@ const SavingsGoal = () => {
           
           <div className="mb-4">
             <label className="block text-gray-700 mb-2" htmlFor="goal-amount">
-              Сумма цели
+              Сумма цели ({currentCurrency})
             </label>
             <input
               type="number"
               id="goal-amount"
               className="w-full px-4 py-3 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
-              value={tempGoal.amount}
-              onChange={(e) => setTempGoal({ ...tempGoal, amount: Number(e.target.value) })}
-              min="1000"
+              value={tempAmount}
+              onChange={(e) => setTempAmount(e.target.value)}
+              min="0"
+              step="0.01"
+              placeholder="Введите сумму"
               required
             />
+            <span className="text-sm text-gray-500 mt-1 block">
+              Текущий баланс: {formatAmount(balance)}
+            </span>
           </div>
           
           <div className="flex justify-end space-x-3">
             <button
               type="button"
               className="p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-              onClick={() => setIsEditing(false)}
+              onClick={() => {
+                setIsEditing(false);
+                setTempAmount('');
+              }}
             >
               <FaTimes />
             </button>
@@ -106,7 +206,7 @@ const SavingsGoal = () => {
               <h2 className="text-xl font-semibold text-primary">Цель накопления</h2>
             </div>
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={openEditModal}
               className="p-2 rounded-full text-primary hover:bg-primary/10 transition-colors"
             >
               <FaEdit size={18} />
@@ -140,7 +240,7 @@ const SavingsGoal = () => {
               <>
                 <FaPiggyBank className="mr-2 text-primary" />
                 <span>
-                  Осталось собрать: {formatAmount(goal.amount - goal.current)}
+                  Осталось собрать: {formatAmount(Math.max(0, goal.amount - goal.current))}
                 </span>
               </>
             ) : (
@@ -152,6 +252,12 @@ const SavingsGoal = () => {
               </div>
             )}
           </div>
+          
+          {goal.current > balance && (
+            <div className="mt-3 p-2 bg-secondary-light/10 border border-secondary-light/30 rounded-lg text-xs text-secondary-dark">
+              <strong>Внимание:</strong> Сумма в подушке превышает текущий баланс. Подушка будет скорректирована до текущего баланса.
+            </div>
+          )}
         </>
       )}
     </div>

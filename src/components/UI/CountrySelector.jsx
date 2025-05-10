@@ -61,30 +61,17 @@ const CountrySelector = ({ currentCountry, onCountryChange }) => {
       }
     };
 
-    // Handle scroll locking
-    const originalStyle = window.getComputedStyle(document.body).overflow;
-    
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      // Prevent scrolling
-      document.body.style.overflow = 'hidden';
     }
     
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      // Restore scrolling
-      if (isOpen) {
-        document.body.style.overflow = originalStyle;
-      }
     };
   }, [isOpen]);
 
   const handleCountrySelect = (country) => {
     onCountryChange(country);
-    
-    // Also update the global country setting so LocationSelector can respond
-    setUserCountry(country);
-    
     setIsOpen(false);
     setSearchTerm('');
   };
@@ -139,7 +126,6 @@ const CountrySelector = ({ currentCountry, onCountryChange }) => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-8 pr-8 py-2 text-sm rounded-lg border border-gray-200 bg-white/70 dark:bg-gray-700 dark:text-white dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-primary"
-                  autoFocus
                 />
                 <FaSearch className="absolute left-2 top-2.5 text-gray-400" size={14} />
                 {searchTerm && (

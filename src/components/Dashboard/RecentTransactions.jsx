@@ -4,14 +4,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { deleteTransaction } from '../../store/transactionSlice';
 import { FaTrash, FaEdit, FaComment } from 'react-icons/fa';
 import Modal from '../UI/Modal';
+import NotificationModal from '../UI/NotificationModal';
 import TransactionForm from './TransactionForm';
 import { formatAmount, formatDate } from '../../utils/formatters';
 
 const RecentTransactions = () => {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [showComment, setShowComment] = useState(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState({
+    isOpen: false,
+    transaction: null
+  });
   const { transactions } = useSelector((state) => state.transactions);
   const { categories } = useSelector((state) => state.categories);
+  const { balance } = useSelector((state) => state.transactions);
   const dispatch = useDispatch();
   
   // Сортируем транзакции по дате (сначала новые)
@@ -20,10 +26,28 @@ const RecentTransactions = () => {
   // Берем последние 5 транзакций
   const recentTransactions = sortedTransactions.slice(0, 5);
   
-  const handleDelete = (id) => {
-    if (window.confirm('Вы уверены, что хотите удалить эту транзакцию?')) {
-      dispatch(deleteTransaction(id));
+  const handleDelete = (transaction) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      transaction
+    });
+  };
+  
+  const confirmDelete = () => {
+    if (deleteConfirmation.transaction) {
+      dispatch(deleteTransaction(deleteConfirmation.transaction.id));
+      setDeleteConfirmation({
+        isOpen: false,
+        transaction: null
+      });
     }
+  };
+  
+  const cancelDelete = () => {
+    setDeleteConfirmation({
+      isOpen: false,
+      transaction: null
+    });
   };
   
   const handleEdit = (transaction) => {
@@ -114,7 +138,7 @@ const RecentTransactions = () => {
                         <FaEdit />
                       </button>
                       <button
-                        onClick={() => handleDelete(transaction.id)}
+                        onClick={() => handleDelete(transaction)}
                         className="p-2 text-danger hover:bg-danger/10 rounded-full transition-colors"
                         title="Удалить"
                       >
@@ -146,6 +170,37 @@ const RecentTransactions = () => {
           />
         </Modal>
       )}
+      
+      {/* Модальное окно подтверждения удаления */}
+      <NotificationModal
+        isOpen={deleteConfirmation.isOpen}
+        onClose={cancelDelete}
+        type="warning"
+        title="Подтверждение удаления"
+        message={deleteConfirmation.transaction ? 
+          `Вы действительно хотите удалить эту транзакцию? ${
+            deleteConfirmation.transaction.type === 'income' 
+              ? `Сумма ${formatAmount(deleteConfirmation.transaction.amount)} будет снята с вашего баланса.`
+              : `Сумма ${formatAmount(deleteConfirmation.transaction.amount)} будет возвращена на ваш баланс.`
+          }` 
+          : ''}
+        autoClose={false}
+      >
+        <div className="flex justify-end space-x-3 mt-4">
+          <button
+            onClick={cancelDelete}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100"
+          >
+            Отмена
+          </button>
+          <button
+            onClick={confirmDelete}
+            className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger-dark"
+          >
+            Удалить
+          </button>
+        </div>
+      </NotificationModal>
     </div>
   );
 };

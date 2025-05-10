@@ -16,6 +16,7 @@ const TransactionForm = ({ onClose, transaction = null }) => {
   
   const dispatch = useDispatch();
   const { categories } = useSelector((state) => state.categories);
+  const { balance } = useSelector((state) => state.transactions);
   
   // Фильтруем категории по типу транзакции
   const filteredCategories = categories.filter(cat => cat.type === type);
@@ -42,14 +43,31 @@ const TransactionForm = ({ onClose, transaction = null }) => {
       return;
     }
     
-    if (isNaN(amount) || Number(amount) <= 0) {
+    const numAmount = Number(amount);
+    
+    if (isNaN(numAmount) || numAmount <= 0) {
       setError('Сумма должна быть положительным числом');
       return;
     }
     
+    // Проверка достаточности средств для расходов
+    if (type === 'expense') {
+      let availableBalance = balance;
+      
+      // Если редактируем транзакцию расхода, добавляем её сумму обратно к балансу
+      if (transaction && transaction.type === 'expense') {
+        availableBalance += Number(transaction.amount);
+      }
+      
+      if (numAmount > availableBalance) {
+        setError(`Недостаточно средств. Доступный баланс: ${formatAmount(availableBalance)}`);
+        return;
+      }
+    }
+    
     const transactionData = {
       type,
-      amount: Number(amount),
+      amount: numAmount,
       categoryId,
       date,
       comment,
@@ -115,9 +133,19 @@ const TransactionForm = ({ onClose, transaction = null }) => {
             id="amount"
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setError(''); // Очищаем ошибку при изменении
+            }}
+            min="0"
+            step="0.01"
             required
           />
+          {type === 'expense' && balance < Number(amount) && amount && (
+            <p className="text-sm text-danger mt-1">
+              Текущий баланс: {formatAmount(balance)}
+            </p>
+          )}
         </div>
         
         <div className="mb-4">

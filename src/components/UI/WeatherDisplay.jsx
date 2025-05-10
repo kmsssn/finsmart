@@ -4,31 +4,7 @@ import ReactDOM from 'react-dom';
 import { FaSyncAlt, FaMapMarkerAlt, FaChevronDown } from 'react-icons/fa';
 import { fetchWeather } from '../../utils/weatherApi';
 import { getUserCity, setUserCity, getUserCountry, setUserCountry } from '../../utils/userPreferences';
-
-// List of countries with cities
-const COUNTRIES_WITH_CITIES = {
-  'Kazakhstan': [
-    'Almaty', 'Astana', 'Shymkent', 'Karaganda', 'Aktobe', 
-    'Taraz', 'Pavlodar', 'Semey', 'Atyrau', 'Kostanay',
-    'Oral', 'Oskemen', 'Kokshetau', 'Turkistan', 'Aktau'
-  ],
-  'Russia': [
-    'Moscow', 'Saint Petersburg', 'Novosibirsk', 'Yekaterinburg', 'Kazan',
-    'Omsk', 'Samara', 'Rostov-on-Don', 'Ufa', 'Krasnoyarsk'
-  ],
-  'United States': [
-    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix',
-    'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'
-  ],
-  'China': [
-    'Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen', 'Chengdu',
-    'Tianjin', 'Wuhan', 'Chongqing', 'Hangzhou', 'Xi\'an'
-  ],
-  'United Kingdom': [
-    'London', 'Birmingham', 'Manchester', 'Glasgow', 'Liverpool',
-    'Bristol', 'Edinburgh', 'Sheffield', 'Leeds', 'Newcastle'
-  ]
-};
+import { COUNTRIES_WITH_CITIES } from './CountrySelector';
 
 const WeatherDisplay = () => {
   const [weatherData, setWeatherData] = useState(null);

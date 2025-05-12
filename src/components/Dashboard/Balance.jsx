@@ -1,4 +1,3 @@
-// src/components/Dashboard/Balance.jsx
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
@@ -7,7 +6,6 @@ import { formatAmount } from '../../utils/formatters';
 const Balance = () => {
   const { balance } = useSelector((state) => state.transactions);
   
-  // Получаем месячные данные
   const monthlyData = useSelector((state) => {
     const currentMonth = new Date().getMonth();
     const incomes = state.transactions.transactions

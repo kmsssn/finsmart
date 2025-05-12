@@ -1,4 +1,3 @@
-// src/components/UI/NotificationModal.jsx
 import React, { useEffect, useState } from 'react';
 import { FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTimes } from 'react-icons/fa';
 import Modal from './Modal';

@@ -17,15 +17,12 @@ const Stats = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [forecastData, setForecastData] = useState([]);
   
-  // Цвета для диаграмм - используем наши обновленные цвета
   const COLORS = ['#36b37e', '#f7768e', '#7aa2f7', '#bb9af7', '#e0af68', '#ff9e64', '#1abc9c', '#c0caf5', '#565f89'];
   
-  // Обработчик выбора периода
   const handlePeriodChange = (period) => {
     setSelectedPeriod(period);
   };
   
-  // Получение транзакций за выбранный период
   const getFilteredTransactions = () => {
     const now = new Date();
     let startDate;
@@ -55,11 +52,9 @@ const Stats = () => {
     return transactions.filter((t) => new Date(t.date) >= startDate);
   };
   
-  // Подготовка данных для круговой диаграммы
   useEffect(() => {
     const filteredTransactions = getFilteredTransactions();
     
-    // Группировка расходов по категориям
     const expensesByCategory = {};
     const incomesByCategory = {};
     
@@ -88,7 +83,6 @@ const Stats = () => {
       }
     });
     
-    // Преобразование в массив для диаграммы
     const expenseData = Object.values(expensesByCategory)
       .sort((a, b) => b.value - a.value)
       .map((item, index) => ({
@@ -106,22 +100,18 @@ const Stats = () => {
     setExpenseChartData(expenseData);
     setIncomeChartData(incomeData);
     
-    // Соединяем данные для общей круговой диаграммы
     const totalExpense = expenseData.reduce((sum, item) => sum + item.value, 0);
     const totalIncome = incomeData.reduce((sum, item) => sum + item.value, 0);
     
     setChartData([
-      { name: 'Доходы', value: totalIncome, color: '#36b37e' }, // зеленый (как был)
-      { name: 'Расходы', value: totalExpense, color: '#f7768e' }, // пастельный красный
+      { name: 'Доходы', value: totalIncome, color: '#36b37e' }, 
+      { name: 'Расходы', value: totalExpense, color: '#f7768e' }, 
     ]);
     
-    // Подготовка данных для прогноза расходов
     prepareForecastData(filteredTransactions);
   }, [transactions, categories, selectedPeriod]);
   
-  // Подготовка данных для прогноза расходов
   const prepareForecastData = (filteredTransactions) => {
-    // Группируем транзакции по месяцам
     const expensesByMonth = {};
     
     filteredTransactions
@@ -140,17 +130,14 @@ const Stats = () => {
         expensesByMonth[monthKey].value += Number(transaction.amount);
       });
     
-    // Преобразуем в массив и сортируем по дате
     const monthlyExpenses = Object.values(expensesByMonth).sort(
       (a, b) => a.month - b.month
     );
     
-    // Если есть данные за несколько месяцев, можем сделать простой прогноз
     if (monthlyExpenses.length >= 2) {
-      const lastMonths = monthlyExpenses.slice(-3); // берем последние 3 месяца или меньше
+      const lastMonths = monthlyExpenses.slice(-3); 
       const avgMonthlyExpense = lastMonths.reduce((sum, item) => sum + item.value, 0) / lastMonths.length;
       
-      // Создаем прогноз на следующие 3 месяца
       const lastMonth = new Date(monthlyExpenses[monthlyExpenses.length - 1].month);
       const forecast = [];
       
@@ -165,7 +152,6 @@ const Stats = () => {
         });
       }
       
-      // Объединяем исторические данные и прогноз
       const forecastData = [
         ...monthlyExpenses.map((item) => ({ ...item, isForecast: false })),
         ...forecast,
@@ -177,7 +163,6 @@ const Stats = () => {
     }
   };
   
-  // Форматирование метки для графика
   const formatMonthLabel = (date) => {
     if (!(date instanceof Date)) {
       return '';
@@ -186,7 +171,6 @@ const Stats = () => {
     return date.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' });
   };
   
-  // Настройка тултипа для круговой диаграммы
   const customTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
@@ -207,7 +191,6 @@ const Stats = () => {
         <p className="text-gray-600 dark:text-gray-400">Анализ ваших доходов и расходов</p>
       </div>
       
-      {/* Выбор периода */}
       <div className="bg-white rounded-lg shadow-card p-6 mb-6 transition-all hover:shadow-hover dark:bg-gray-800">
         <div className="mb-4">
           <h2 className="text-xl font-semibold mb-4 dark:text-white">Период анализа</h2>
@@ -233,9 +216,7 @@ const Stats = () => {
         </div>
       </div>
       
-      {/* Основной анализ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Соотношение доходов и расходов */}
         <div className="bg-white rounded-lg shadow-md p-6 stats-card dark:bg-gray-800">
           <h2 className="text-xl font-semibold mb-4 dark:text-white">Доходы и расходы</h2>
           {chartData.length > 0 ? (
@@ -287,7 +268,6 @@ const Stats = () => {
           </div>
         </div>
         
-        {/* Расходы по категориям */}
         <div className="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800">
           <h2 className="text-xl font-semibold mb-4 dark:text-white">Расходы по категориям</h2>
           {expenseChartData.length > 0 ? (
@@ -332,7 +312,6 @@ const Stats = () => {
         </div>
       </div>
       
-      {/* Прогноз расходов */}
       <div className="bg-white rounded-lg shadow-md p-6 mt-6 dark:bg-gray-800">
         <h2 className="text-xl font-semibold mb-4 dark:text-white">Прогноз расходов</h2>
         {forecastData.length > 0 ? (
@@ -355,12 +334,12 @@ const Stats = () => {
                 <Bar
                   name="Исторические расходы"
                   dataKey={(data) => (data.isForecast ? null : data.value)}
-                  fill="#f7768e" // Пастельный красный для расходов
+                  fill="#f7768e" 
                 />
                 <Bar
                   name="Прогноз расходов"
                   dataKey={(data) => (data.isForecast ? data.value : null)}
-                  fill="#bb9af7" // Лавандовый для прогноза
+                  fill="#bb9af7" 
                   pattern={
                     <pattern id="pattern-stripe" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
                       <rect width="4" height="8" transform="translate(0,0)" fill="white"></rect>

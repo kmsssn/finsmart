@@ -1,6 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-// Предустановленные категории
 const defaultCategories = [
   { id: '1', name: 'Продукты', type: 'expense', color: '#3490dc', icon: 'FaShoppingCart' },
   { id: '2', name: 'Транспорт', type: 'expense', color: '#38a169', icon: 'FaBus' },

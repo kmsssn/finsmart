@@ -1,4 +1,3 @@
-// src/utils/formatters.js
 import { loadUserPreferences } from './userPreferences';
 
 export const formatAmount = (amount) => {
@@ -35,7 +34,6 @@ export const formatAmount = (amount) => {
       }).format(amount);
       
     default:
-      // Default to KZT
       return new Intl.NumberFormat('kk-KZ', {
         style: 'currency',
         currency: 'KZT',

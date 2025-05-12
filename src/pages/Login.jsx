@@ -1,4 +1,3 @@
-// src/pages/Login.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,14 +15,12 @@ const Login = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Запускаем анимации после загрузки компонента
     setIsAnimated(true);
   }, []);
   
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Простая валидация
     if (!email || !password) {
       setError('Пожалуйста, заполните все поля');
       return;
@@ -31,13 +28,10 @@ const Login = () => {
     
     setIsLoading(true);
     
-    // Имитация задержки загрузки для лучшего UX
     setTimeout(() => {
-      // В реальном приложении здесь был бы запрос к API
-      // Для демонстрации используем локальное хранилище
+      // ЗДЕСЬ МОГ БЫТЬ ЗАПРОС К АПИ
       const users = JSON.parse(localStorage.getItem('users')) || [];
       
-      // Для демо-аккаунта
       if (email === 'demo@example.com' && password === 'demo123') {
         dispatch(login({ id: 'demo-user', email: 'demo@example.com' }));
         navigate('/dashboard');
@@ -58,7 +52,6 @@ const Login = () => {
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row overflow-hidden">
-      {/* Левая часть с иллюстрацией */}
       <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary via-gradient-middle to-secondary relative">
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
         <div className="relative z-10 flex items-center justify-center w-full">
@@ -108,7 +101,6 @@ const Login = () => {
         </div>
       </div>
       
-      {/* Правая часть с формой входа */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-gradient-to-br from-pastel-blue via-white to-pastel-pink p-6">
         <div className={`bg-white/80 backdrop-blur-md w-full max-w-md rounded-2xl shadow-card p-8 transition-all duration-1000 ${isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
           <div className="text-center mb-8">

@@ -1,4 +1,3 @@
-// src/components/Dashboard/TransactionForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addTransaction, updateTransaction } from '../../store/transactionSlice';
@@ -18,15 +17,11 @@ const TransactionForm = ({ onClose, transaction = null }) => {
   const { categories } = useSelector((state) => state.categories);
   const { balance } = useSelector((state) => state.transactions);
   
-  // Фильтруем категории по типу транзакции
   const filteredCategories = categories.filter(cat => cat.type === type);
   
-  // Устанавливаем первую категорию из списка при изменении типа транзакции
   useEffect(() => {
-    // Проверяем, есть ли выбранная категория в отфильтрованном списке
     const isCategoryValid = categoryId && filteredCategories.some(cat => cat.id === categoryId);
     
-    // Устанавливаем категорию только если нет валидной категории
     if (!isCategoryValid && filteredCategories.length > 0) {
       setCategoryId(filteredCategories[0].id);
     } else if (filteredCategories.length === 0) {
@@ -37,7 +32,6 @@ const TransactionForm = ({ onClose, transaction = null }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Валидация
     if (!amount || !categoryId || !date) {
       setError('Пожалуйста, заполните все обязательные поля');
       return;
@@ -50,11 +44,9 @@ const TransactionForm = ({ onClose, transaction = null }) => {
       return;
     }
     
-    // Проверка достаточности средств для расходов
     if (type === 'expense') {
       let availableBalance = balance;
       
-      // Если редактируем транзакцию расхода, добавляем её сумму обратно к балансу
       if (transaction && transaction.type === 'expense') {
         availableBalance += Number(transaction.amount);
       }
@@ -74,13 +66,11 @@ const TransactionForm = ({ onClose, transaction = null }) => {
     };
     
     if (transaction) {
-      // Обновление существующей транзакции
       dispatch(updateTransaction({
         ...transactionData,
         id: transaction.id,
       }));
     } else {
-      // Добавление новой транзакции
       dispatch(addTransaction(transactionData));
     }
     
@@ -135,7 +125,7 @@ const TransactionForm = ({ onClose, transaction = null }) => {
             value={amount}
             onChange={(e) => {
               setAmount(e.target.value);
-              setError(''); // Очищаем ошибку при изменении
+              setError(''); 
             }}
             min="0"
             step="0.01"

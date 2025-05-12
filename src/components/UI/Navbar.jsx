@@ -1,4 +1,3 @@
-// src/components/UI/Navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -17,7 +16,6 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   
-  // Отслеживаем скролл для изменения стиля навбара
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
@@ -34,7 +32,6 @@ const Navbar = () => {
     };
   }, []);
   
-  // Закрываем мобильное меню при изменении маршрута
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
@@ -65,7 +62,6 @@ const Navbar = () => {
             }`}>FinSmart</h1>
           </div>
           
-          {/* Мобильное меню кнопка */}
           <div className="md:hidden flex items-center space-x-2">
             <ThemeToggle />
             <button 
@@ -80,7 +76,6 @@ const Navbar = () => {
             </button>
           </div>
           
-          {/* Десктопное меню */}
           <div className="hidden md:flex items-center space-x-1">
             <NavLink
               to="/dashboard"
@@ -133,7 +128,6 @@ const Navbar = () => {
             
             <ThemeToggle />
             
-            {/* Аватар пользователя и меню */}
             <div className="relative ml-3 group">
               <button className={`flex items-center text-sm font-medium ${
                 scrolled ? 'text-gray-700 dark:text-gray-300' : 'text-white'
@@ -157,7 +151,6 @@ const Navbar = () => {
           </div>
         </div>
         
-        {/* Мобильное меню */}
         <div className={`md:hidden transition-all duration-300 ease-in-out overflow-hidden ${
           mobileMenuOpen ? 'max-h-60 opacity-100 pt-4' : 'max-h-0 opacity-0'
         }`}>

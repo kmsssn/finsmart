@@ -1,4 +1,3 @@
-// src/components/FinSage/SavingsGoal.jsx
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FaFlag, FaPiggyBank, FaEdit, FaCheck, FaTimes, FaAward } from 'react-icons/fa';
@@ -13,32 +12,28 @@ const SavingsGoal = () => {
       amount: 50000, 
       name: 'Финансовая подушка', 
       current: 0,
-      currency: 'KZT' // Добавляем валюту цели
+      currency: 'KZT' 
     };
   });
   
   const [isEditing, setIsEditing] = useState(false);
   const [tempGoal, setTempGoal] = useState({ ...goal });
   const [showAnimation, setShowAnimation] = useState(false);
-  const [tempAmount, setTempAmount] = useState(''); // Для правильной работы с инпутом
+  const [tempAmount, setTempAmount] = useState(''); 
   const [isConverting, setIsConverting] = useState(false);
   
   const { balance } = useSelector((state) => state.transactions);
   const preferences = loadUserPreferences();
   const currentCurrency = preferences.currency || 'KZT';
   
-  // Автоматически обновляем прогресс цели при изменении баланса
   useEffect(() => {
     if (!isConverting) {
       const prevCurrent = goal.current;
-      // Финансовая подушка не может быть больше текущего баланса
       const newCurrent = Math.min(balance, goal.amount);
       
-      // Обновляем только если значение изменилось
       if (newCurrent !== prevCurrent) {
         setGoal(prev => ({ ...prev, current: newCurrent }));
         
-        // Показываем анимацию если был прогресс
         if (newCurrent > prevCurrent) {
           setShowAnimation(true);
           setTimeout(() => setShowAnimation(false), 2000);
@@ -47,12 +42,9 @@ const SavingsGoal = () => {
     }
   }, [balance, goal.amount, isConverting]);
   
-  // Конвертируем цель при изменении валюты
   useEffect(() => {
     const convertGoalCurrency = async () => {
-      // Проверяем, нужна ли конвертация
       if (!goal.currency || goal.currency === currentCurrency) {
-        // Если валюта цели не установлена, устанавливаем текущую
         if (!goal.currency) {
           const updatedGoal = { ...goal, currency: currentCurrency };
           setGoal(updatedGoal);
@@ -67,17 +59,14 @@ const SavingsGoal = () => {
         console.log(`Converting goal from ${goal.currency} to ${currentCurrency}`);
         console.log('Original goal:', goal);
         
-        // Конвертируем сумму цели
         const amountConversion = await convertCurrencyWithCurrentRate(
           goal.amount, 
           goal.currency, 
           currentCurrency
         );
         
-        // Получаем текущий баланс после конвертации валюты
         const newCurrent = Math.min(balance, amountConversion.amount);
         
-        // Обновляем цель с новой валютой и текущим балансом
         const convertedGoal = {
           ...goal,
           amount: amountConversion.amount,
@@ -96,12 +85,10 @@ const SavingsGoal = () => {
       }
     };
 
-    // Добавляем небольшую задержку, чтобы дать время для обновления баланса
     const timer = setTimeout(convertGoalCurrency, 100);
     return () => clearTimeout(timer);
   }, [currentCurrency, balance]);
   
-  // Сохраняем цель в localStorage при её изменении
   useEffect(() => {
     if (!isConverting) {
       localStorage.setItem('savingsGoal', JSON.stringify(goal));
@@ -111,30 +98,26 @@ const SavingsGoal = () => {
   const handleEditSubmit = (e) => {
     e.preventDefault();
     
-    // Преобразуем строку в число, но сохраняем реальное значение
     const amount = tempAmount === '' ? 0 : Number(tempAmount);
     
-    // При установке новой суммы цели, текущий прогресс остаётся как min(balance, newAmount)
     const newCurrent = Math.min(balance, amount);
     
     setGoal({
       ...tempGoal,
       amount,
       current: newCurrent,
-      currency: currentCurrency // Сохраняем текущую валюту
+      currency: currentCurrency 
     });
     setIsEditing(false);
-    setTempAmount(''); // Очищаем временное значение
+    setTempAmount(''); 
   };
   
   const openEditModal = () => {
     setIsEditing(true);
     setTempGoal({ ...goal });
-    // Устанавливаем значение без нуля
     setTempAmount(goal.amount === 0 ? '' : goal.amount.toString());
   };
   
-  // Вычисляем процент выполнения цели
   const progress = goal.amount > 0 ? Math.min(Math.round((goal.current / goal.amount) * 100), 100) : 0;
   
   return (

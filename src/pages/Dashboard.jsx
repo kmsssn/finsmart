@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx - updated layout
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Balance from '../components/Dashboard/Balance';
@@ -19,13 +18,11 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   
   useEffect(() => {
-    // Эффект появления при первой загрузке
     setTimeout(() => {
       setIsLoaded(true);
     }, 100);
   }, []);
 
-  // Listen for changes in localStorage to refresh WeatherDisplay
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === 'user_preferences') {
@@ -55,7 +52,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Moved WeatherDisplay to its own div with high z-index */}
           <div className="z-[1000] relative">
             <WeatherDisplay key={refreshKey} />
           </div>
@@ -63,7 +59,6 @@ const Dashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Основная секция */}
         <div className="col-span-2">
           <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 transition-all duration-700 delay-100 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
             <Balance />
@@ -88,7 +83,6 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Сайдбар с пониженным z-index */}
         <div className={`col-span-1 transition-all duration-700 delay-300 transform ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'} z-10`}>
           <Advisor />
           <div className="mt-6">

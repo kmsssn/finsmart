@@ -11,7 +11,6 @@ import Navbar from './components/UI/Navbar';
 const App = () => {
   const { isAuthenticated } = useSelector((state) => state.auth);
 
-  // Protected route
   const ProtectedRoute = ({ children }) => {
     if (!isAuthenticated) {
       return <Navigate to="/login" replace />;

@@ -1,4 +1,3 @@
-// src/components/Dashboard/RecentTransactions.jsx
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteTransaction } from '../../store/transactionSlice';
@@ -20,10 +19,8 @@ const RecentTransactions = () => {
   const { balance } = useSelector((state) => state.transactions);
   const dispatch = useDispatch();
   
-  // Сортируем транзакции по дате (сначала новые)
   const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
   
-  // Берем последние 5 транзакций
   const recentTransactions = sortedTransactions.slice(0, 5);
   
   const handleDelete = (transaction) => {
@@ -171,7 +168,6 @@ const RecentTransactions = () => {
         </Modal>
       )}
       
-      {/* Модальное окно подтверждения удаления */}
       <NotificationModal
         isOpen={deleteConfirmation.isOpen}
         onClose={cancelDelete}

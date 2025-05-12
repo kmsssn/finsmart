@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import the styles from your existing styles.css file */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -15,7 +14,6 @@ body {
   min-height: 100vh;
 }
 
-/* Дополнительные стили */
 .bg-gradient-fancy {
   background-image: linear-gradient(to bottom right, #ede9fe, #ffffff, #dbeafe);
   background-blend-mode: overlay;
@@ -30,7 +28,6 @@ body {
   border-radius: 2%;
 }
 
-/* Темная тема */
 .dark body {
   background-color: #1a1b26;
   color: #c0caf5;
@@ -84,7 +81,6 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
-/* Обновленные градиенты */
 .bg-gradient-primary {
   background: linear-gradient(135deg, #7aa2f7 0%, #a9c0ff 100%);
 }
@@ -105,7 +101,6 @@ body {
   background: linear-gradient(135deg, #f7768e 0%, #faa9b8 100%);
 }
 
-/* Анимации */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -131,7 +126,6 @@ body {
   50% { opacity: 0.5; }
 }
 
-/* Классы анимаций */
 .animate-fade-in {
   animation: fadeIn 0.6s ease-out;
 }
@@ -152,7 +146,6 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Стили для круговых диаграмм */
 .recharts-sector:hover {
   transform: scale(1.05) translateY(-3px);
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
@@ -167,12 +160,10 @@ body {
   @apply shadow-xl transform -translate-y-1;
 }
 
-/* Градиентный текст */
 .gradient-text {
   @apply bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text;
 }
 
-/* Градиентные кнопки */
 .btn-gradient {
   @apply bg-gradient-to-r from-primary to-secondary text-white transition-all duration-300;
 }

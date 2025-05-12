@@ -1,10 +1,8 @@
-// components/UI/Modal.jsx
 import React, { useEffect, useState } from 'react';
 
 const Modal = ({ isOpen, onClose, children }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   
-  // Блокировка прокрутки при открытии модального окна
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -13,13 +11,11 @@ const Modal = ({ isOpen, onClose, children }) => {
       document.body.style.overflow = 'unset';
     }
     
-    // Очистка при размонтировании
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
   
-  // Обработка нажатия Escape для закрытия модального окна
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {
@@ -36,10 +32,8 @@ const Modal = ({ isOpen, onClose, children }) => {
     };
   }, [isOpen, onClose]);
   
-  // Если модальное окно закрыто, не рендерим ничего
   if (!isOpen) return null;
   
-  // Обработчик клика по оверлею (закрытие модального окна)
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
       onClose();

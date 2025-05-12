@@ -1,10 +1,8 @@
-// src/components/UI/CountrySelector.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { FaGlobeAsia, FaSearch, FaTimes } from 'react-icons/fa';
 import { setUserCountry } from '../../utils/userPreferences';
 
-// List of countries with cities
 const COUNTRIES_WITH_CITIES = {
   'Kazakhstan': [
     'Almaty', 'Astana', 'Shymkent', 'Karaganda', 'Aktobe', 
@@ -39,7 +37,6 @@ const CountrySelector = ({ currentCountry, onCountryChange }) => {
   const buttonRef = useRef(null);
 
   useEffect(() => {
-    // Filter countries based on search term
     if (searchTerm.trim() === '') {
       setFilteredCountries(ALL_COUNTRIES);
     } else {
@@ -51,7 +48,6 @@ const CountrySelector = ({ currentCountry, onCountryChange }) => {
   }, [searchTerm]);
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
       if (isOpen && 
           buttonRef.current && 
@@ -80,12 +76,11 @@ const CountrySelector = ({ currentCountry, onCountryChange }) => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const spaceToRight = window.innerWidth - rect.right;
-      // Adjust position based on available space
       let left;
-      if (spaceToRight < 250) { // If not enough space to the right
-        left = Math.max(rect.left - 250 + rect.width, 10); // Align right edge of dropdown with right edge of button
+      if (spaceToRight < 250) { 
+        left = Math.max(rect.left - 250 + rect.width, 10); 
       } else {
-        left = rect.left; // Align left edge of dropdown with left edge of button
+        left = rect.left; 
       }
       
       setDropdownPosition({

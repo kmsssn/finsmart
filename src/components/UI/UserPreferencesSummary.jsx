@@ -1,4 +1,3 @@
-// src/components/UI/UserPreferencesSummary.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaMapMarkerAlt, FaGlobe, FaCalendarAlt, FaCog, FaGlobeAsia } from 'react-icons/fa';
@@ -7,7 +6,6 @@ import { loadUserPreferences } from '../../utils/userPreferences';
 const UserPreferencesSummary = () => {
   const preferences = loadUserPreferences();
   
-  // Convert date format to readable text
   const getDateFormatLabel = (format) => {
     switch (format) {
       case 'dd.MM.yyyy':
@@ -21,7 +19,6 @@ const UserPreferencesSummary = () => {
     }
   };
   
-  // Get currency symbol
   const getCurrencySymbol = (code) => {
     switch (code) {
       case 'KZT':
@@ -37,7 +34,6 @@ const UserPreferencesSummary = () => {
     }
   };
   
-  // Get currency name
   const getCurrencyName = (code) => {
     switch (code) {
       case 'KZT':

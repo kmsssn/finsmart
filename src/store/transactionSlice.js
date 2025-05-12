@@ -19,7 +19,7 @@ const transactionSlice = createSlice({
       
       state.transactions.push(newTransaction);
       
-      // Обновление баланса с максимальной точностью
+      // Обновление баланса
       if (newTransaction.type === 'income') {
         state.balance = Number((state.balance + newTransaction.amount).toFixed(8));
       } else {
@@ -51,7 +51,6 @@ const transactionSlice = createSlice({
         
         const newAmount = Number(action.payload.amount);
         
-        // Применяем эффект новой транзакции
         if (action.payload.type === 'income') {
           state.balance = Number((state.balance + newAmount).toFixed(8));
         } else {
@@ -68,12 +67,12 @@ const transactionSlice = createSlice({
       if (transaction) {
         const amount = Number(transaction.amount);
         
-        // Правильно откатываем эффект транзакции
+        //откат транзакции
         if (transaction.type === 'income') {
-          // Если это был доход, ВЫЧИТАЕМ его из баланса
+          // ДОХОД ВЫЧИТАЕМ его из баланса
           state.balance = Number((state.balance - amount).toFixed(8));
         } else {
-          // Если это был расход, ДОБАВЛЯЕМ его обратно к балансу
+          //РАСХОД ДОБАВЛЯЕМ его обратно к балансу
           state.balance = Number((state.balance + amount).toFixed(8));
         }
         
@@ -83,8 +82,6 @@ const transactionSlice = createSlice({
       }
     },
     updateAllTransactionAmounts: (state, action) => {
-      // This action is used when updating currency to apply converted amounts
-      // Храним с максимальной точностью все значения
       state.transactions = action.payload.transactions.map(transaction => ({
         ...transaction,
         amount: Number(transaction.amount)

@@ -1,4 +1,3 @@
-// src/pages/Settings.jsx - исправленная версия с уведомлениями
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
@@ -18,7 +17,6 @@ const Settings = () => {
   const dispatch = useDispatch();
   const location = useLocation();
   
-  // Check if we should activate the user tab from URL
   const [activeTab, setActiveTab] = useState(() => {
     const params = new URLSearchParams(location.search);
     return params.get('tab') === 'user' ? 'user' : 'categories';
@@ -33,10 +31,8 @@ const Settings = () => {
     icon: 'FaTag',
   });
   
-  // User preferences
   const [userPreferences, setUserPreferences] = useState(loadUserPreferences());
   
-  // State for notifications
   const [notification, setNotification] = useState({
     isOpen: false,
     type: 'info',
@@ -54,18 +50,17 @@ const Settings = () => {
   ];
   
   const colorOptions = [
-    '#3490dc', // синий
-    '#38a169', // зеленый
-    '#e53e3e', // красный
-    '#805ad5', // фиолетовый
-    '#d69e2e', // желтый
-    '#dd6b20', // оранжевый
-    '#0694a2', // циан
-    '#9f7aea', // лавандовый
-    '#4c51bf', // индиго
+    '#3490dc', 
+    '#38a169', 
+    '#e53e3e', 
+    '#805ad5', 
+    '#d69e2e', 
+    '#dd6b20', 
+    '#0694a2', 
+    '#9f7aea', 
+    '#4c51bf', 
   ];
   
-  // Currencies
   const currencies = [
     { code: 'KZT', symbol: '₸', name: 'Казахстанский тенге' },
     { code: 'USD', symbol: '$', name: 'Доллар США' },
@@ -73,14 +68,12 @@ const Settings = () => {
     { code: 'RUB', symbol: '₽', name: 'Российский рубль' }
   ];
   
-  // Date formats
   const dateFormats = [
     { value: 'dd.MM.yyyy', label: 'ДД.ММ.ГГГГ', example: '31.12.2025' },
     { value: 'MM/dd/yyyy', label: 'ММ/ДД/ГГГГ', example: '12/31/2025' },
     { value: 'yyyy-MM-dd', label: 'ГГГГ-ММ-ДД', example: '2025-12-31' }
   ];
   
-  // Открытие модального окна для создания новой категории
   const openCreateModal = () => {
     setEditingCategory(null);
     setFormData({
@@ -92,7 +85,6 @@ const Settings = () => {
     setIsModalOpen(true);
   };
   
-  // Открытие модального окна для редактирования категории
   const openEditModal = (category) => {
     setEditingCategory(category);
     setFormData({
@@ -104,7 +96,6 @@ const Settings = () => {
     setIsModalOpen(true);
   };
   
-  // Обработка изменений в форме
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -114,7 +105,6 @@ const Settings = () => {
   };
   
   
-  // Обработка отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -124,7 +114,6 @@ const Settings = () => {
     }
     
     if (editingCategory) {
-      // Обновление существующей категории
       dispatch(
         updateCategory({
           ...editingCategory,
@@ -135,7 +124,6 @@ const Settings = () => {
         })
       );
     } else {
-      // Создание новой категории
       dispatch(
         addCategory({
           name: formData.name,
@@ -149,9 +137,7 @@ const Settings = () => {
     setIsModalOpen(false);
   };
   
-  // Удаление категории
   const handleDelete = (categoryId) => {
-    // Проверяем, используется ли категория в транзакциях
     const isUsed = transactions.some((t) => t.categoryId === categoryId);
     
     if (isUsed) {
@@ -164,22 +150,18 @@ const Settings = () => {
     }
   };
   
-  // Получение иконки по названию
   const IconComponent = ({ iconName, size = 20, color = 'currentColor' }) => {
     const Icon = Icons[iconName];
     return Icon ? <Icon size={size} color={color} /> : <Icons.FaTag size={size} color={color} />;
   };
   
-  // Обновление пользовательских настроек
   const updateUserPreferences = (key, value) => {
     const updatedPreferences = { ...userPreferences, [key]: value };
     setUserPreferences(updatedPreferences);
     saveUserPreferences(updatedPreferences);
     
-    // Специальная обработка для страны и города
     if (key === 'country') {
       setUserCountry(value);
-      // При изменении страны устанавливаем первый город из списка
       const cities = COUNTRIES_WITH_CITIES[value] || [];
       if (cities.length > 0) {
         const firstCity = cities[0];
@@ -193,13 +175,10 @@ const Settings = () => {
     }
   };
   
-  // Обработка изменения валюты с конвертацией
-// Обработка изменения валюты с конвертацией
   const handleCurrencyChange = async (newCurrency) => {
     try {
       const oldCurrency = userPreferences.currency;
       
-      // Show loading notification
       setNotification({
         isOpen: true,
         type: 'info',
@@ -208,17 +187,13 @@ const Settings = () => {
         autoClose: false
       });
       
-      // Use thunk action for proper conversion
       const result = await dispatch(changeCurrency(newCurrency));
       
-      // Close loading notification
       setNotification(prev => ({ ...prev, isOpen: false }));
       
       if (result?.success) {
-        // Update user preferences
         updateUserPreferences('currency', newCurrency);
         
-        // Show success notification with detailed info
         let rateInfo = [];
         rateInfo.push(`Курс: 1 ${result.oldCurrency} = ${result.rate.toFixed(8)} ${result.newCurrency}`);
         
@@ -228,7 +203,6 @@ const Settings = () => {
           rateInfo.push('Использован текущий курс из API');
         }
         
-        // Проверяем на кратную конвертацию
         const lastConversion = localStorage.getItem('last_currency_conversion');
         if (lastConversion) {
           const parsed = JSON.parse(lastConversion);
@@ -238,7 +212,6 @@ const Settings = () => {
           }
         }
         
-        // Сохраняем информацию о текущей конвертации
         localStorage.setItem('last_currency_conversion', JSON.stringify({
           from: oldCurrency,
           to: newCurrency,
@@ -260,7 +233,6 @@ const Settings = () => {
           duration: 6000
         });
       } else {
-        // Show error notification
         setNotification({
           isOpen: true,
           type: 'error',
@@ -272,10 +244,8 @@ const Settings = () => {
     } catch (error) {
       console.error('Error changing currency:', error);
       
-      // Close any open notifications
       setNotification(prev => ({ ...prev, isOpen: false }));
       
-      // Show error notification
       setNotification({
         isOpen: true,
         type: 'error',
@@ -304,7 +274,6 @@ const Settings = () => {
         )}
       </div>
       
-      {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-card overflow-hidden mb-6 transition-all duration-300 hover:shadow-hover">
         <div className="flex border-b dark:border-gray-700">
           <button
@@ -357,7 +326,6 @@ const Settings = () => {
             </button>
           </div>
           
-          {/* Список категорий */}
           <div className="p-6">
             {categories
               .filter((category) => category.type === formData.type)
@@ -424,7 +392,6 @@ const Settings = () => {
           <div className="p-6">
             <h2 className="text-xl font-semibold mb-6 dark:text-white">Пользовательские настройки</h2>
             
-            {/* Location settings */}
             <div className="mb-6 border-b pb-6 dark:border-gray-700">
               <h3 className="text-lg font-medium mb-4 flex items-center dark:text-gray-200">
                 <FaMapMarkerAlt className="mr-2 text-primary" /> Местоположение
@@ -472,7 +439,6 @@ const Settings = () => {
               </div>
             </div>
             
-            {/* Currency settings */}
             <div className="mb-6 border-b pb-6 dark:border-gray-700">
               <h3 className="text-lg font-medium mb-4 flex items-center dark:text-gray-200">
                 <FaGlobe className="mr-2 text-primary" /> Валюта
@@ -497,7 +463,6 @@ const Settings = () => {
               </div>
             </div>
             
-            {/* Date format settings */}
             <div className="mb-6">
               <h3 className="text-lg font-medium mb-4 flex items-center dark:text-gray-200">
                 <FaCalendarAlt className="mr-2 text-primary" /> Формат даты
@@ -526,7 +491,6 @@ const Settings = () => {
         </div>
       )}
       
-      {/* Модальное окно для создания/редактирования категории */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="p-6">
           <h2 className="text-xl font-semibold mb-4 dark:text-white">
@@ -634,7 +598,6 @@ const Settings = () => {
         </div>
       </Modal>
       
-      {/* Уведомление */}
       <NotificationModal
         isOpen={notification.isOpen}
         onClose={() => setNotification(prev => ({ ...prev, isOpen: false }))}

@@ -1,10 +1,7 @@
-// src/utils/weatherApi.js
 import { getUserCountry } from './userPreferences';
 
-// Using OpenWeatherMap API
-const API_KEY = '893c89add978c3f76529f703848cda87'; // This key is already in your code
+const API_KEY = '893c89add978c3f76529f703848cda87'; 
 
-// Country code mapping for better API results
 const COUNTRY_CODES = {
   'Kazakhstan': 'KZ',
   'Russia': 'RU',
@@ -13,7 +10,6 @@ const COUNTRY_CODES = {
   'United Kingdom': 'GB'
 };
 
-// Fallback function to fetch weather without country code
 const fetchWeatherFallback = async (city) => {
   try {
     const response = await fetch(
@@ -36,7 +32,6 @@ export const fetchWeather = async (city = 'Almaty') => {
     const userCountry = getUserCountry();
     const countryCode = COUNTRY_CODES[userCountry] || '';
     
-    // Add country code to query if available
     const locationQuery = countryCode 
       ? `${city},${countryCode}` 
       : city;
@@ -46,7 +41,6 @@ export const fetchWeather = async (city = 'Almaty') => {
     );
     
     if (!response.ok) {
-      // If request with country code fails, try without it
       if (countryCode) {
         console.log(`Weather request failed for ${locationQuery}, trying without country code`);
         return fetchWeatherFallback(city);
@@ -61,7 +55,6 @@ export const fetchWeather = async (city = 'Almaty') => {
   }
 };
 
-// This is used as a fallback when API calls fail
 export const getMockWeatherData = (city = 'Almaty') => {
   return {
     weather: [{ main: 'Clear', description: 'ясно' }],

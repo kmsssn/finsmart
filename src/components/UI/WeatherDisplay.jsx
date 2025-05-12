@@ -1,4 +1,3 @@
-// src/components/UI/WeatherDisplay.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { FaSyncAlt, FaMapMarkerAlt, FaChevronDown } from 'react-icons/fa';
@@ -21,30 +20,24 @@ const WeatherDisplay = () => {
   }, [userCity]);
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
-      // Only close if click is outside both the button and the dropdown
       if (isLocationOpen && 
           buttonRef.current && 
           !buttonRef.current.contains(event.target) &&
-          // Check if the click target is within the dropdown portal
           !event.target.closest('.location-dropdown-portal')) {
         setIsLocationOpen(false);
       }
     };
 
-    // Handle scroll locking
     const originalStyle = window.getComputedStyle(document.body).overflow;
     
     if (isLocationOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-      // Prevent scrolling
       document.body.style.overflow = 'hidden';
     }
     
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      // Restore scrolling
       if (isLocationOpen) {
         document.body.style.overflow = originalStyle;
       }
@@ -76,7 +69,6 @@ const WeatherDisplay = () => {
     setCurrentCountry(country);
     setUserCountry(country);
     
-    // Set default city for selected country
     const cities = COUNTRIES_WITH_CITIES[country] || [];
     if (cities.length > 0) {
       setCurrentCity(cities[0]);
@@ -97,12 +89,11 @@ const WeatherDisplay = () => {
     if (!isLocationOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const spaceToRight = window.innerWidth - rect.right;
-      // Adjust position based on available space
       let left;
-      if (spaceToRight < 250) { // If not enough space to the right
-        left = Math.max(rect.left - 250 + rect.width, 10); // Align right edge with button
+      if (spaceToRight < 250) { 
+        left = Math.max(rect.left - 250 + rect.width, 10); 
       } else {
-        left = rect.left; // Align left edge with button
+        left = rect.left; 
       }
       
       setDropdownPosition({
@@ -113,7 +104,6 @@ const WeatherDisplay = () => {
     setIsLocationOpen(!isLocationOpen);
   };
   
-  // Get weather icon
   const getWeatherIcon = (weatherMain) => {
     switch (weatherMain) {
       case 'Clear':
@@ -140,7 +130,6 @@ const WeatherDisplay = () => {
   
   return (
     <div className="weather-display-wrapper">
-      {/* Weather Display */}
       <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-lg py-2 px-4 shadow-md dark:shadow-lg flex items-center transition-all duration-300 hover:shadow-lg">
         {isLoading ? (
           <div className="flex items-center">
@@ -209,7 +198,6 @@ const WeatherDisplay = () => {
         )}
       </div>
       
-      {/* Location Dropdown using Portal */}
       {isLocationOpen && ReactDOM.createPortal(
         <div 
           className="fixed location-dropdown-portal"

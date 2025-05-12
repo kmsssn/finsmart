@@ -1,4 +1,3 @@
-// src/pages/Register.jsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,14 +16,12 @@ const Register = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Запускаем анимации после загрузки компонента
     setIsAnimated(true);
   }, []);
   
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Валидация
     if (!email || !password || !confirmPassword) {
       setError('Пожалуйста, заполните все поля');
       return;
@@ -37,9 +34,7 @@ const Register = () => {
     
     setIsLoading(true);
     
-    // Имитация задержки загрузки для лучшего UX
     setTimeout(() => {
-      // Для демонстрации используем локальное хранилище
       const users = JSON.parse(localStorage.getItem('users')) || [];
       const existingUser = users.find(u => u.email === email);
       
@@ -65,7 +60,6 @@ const Register = () => {
   
   return (
     <div className="min-h-screen flex flex-col md:flex-row overflow-hidden">
-      {/* Левая часть с иллюстрацией */}
       <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary via-gradient-middle to-secondary relative">
         <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-10"></div>
         <div className="relative z-10 flex items-center justify-center w-full">
@@ -115,7 +109,6 @@ const Register = () => {
         </div>
       </div>
       
-      {/* Правая часть с формой регистрации */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-gradient-to-br from-pastel-blue via-white to-pastel-pink p-6">
         <div className={`bg-white/80 backdrop-blur-md w-full max-w-md rounded-2xl shadow-card p-8 transition-all duration-1000 ${isAnimated ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
           <div className="text-center mb-8">

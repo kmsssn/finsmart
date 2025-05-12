@@ -1,4 +1,3 @@
-// src/components/FinSage/Advisor.jsx
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { FaLightbulb, FaChartLine, FaExclamationTriangle, FaRobot } from 'react-icons/fa';
@@ -9,15 +8,11 @@ const Advisor = () => {
   const { transactions } = useSelector((state) => state.transactions);
   const { categories } = useSelector((state) => state.categories);
   
-  // Функция для генерации советов на основе финансовых данных
   useEffect(() => {
-    // Эффект загрузки
     setIsLoading(true);
     
-    // Имитация обработки данных с задержкой для эффекта "умного анализа"
     setTimeout(() => {
       if (!transactions.length) {
-        // Если транзакций нет, показываем стартовый совет
         setAdvice([{
           type: 'info',
           icon: <FaLightbulb className="text-primary" />,
@@ -52,7 +47,6 @@ const Advisor = () => {
   }, [transactions, categories]);
   
   const generateAdvice = () => {
-    // Здесь ваш существующий код генерации советов
     const currentMonth = new Date().getMonth();
     const lastMonth = (currentMonth - 1 + 12) % 12;
     
@@ -80,7 +74,6 @@ const Advisor = () => {
       .filter((t) => t.type === 'expense')
       .reduce((sum, t) => sum + Number(t.amount), 0);
     
-    // Расходы по категориям за текущий месяц
     const expensesByCategory = {};
     
     currentMonthTransactions
@@ -92,15 +85,12 @@ const Advisor = () => {
         expensesByCategory[t.categoryId] += Number(t.amount);
       });
     
-    // Сортируем категории расходов по убыванию суммы
     const sortedCategoryIds = Object.keys(expensesByCategory).sort(
       (a, b) => expensesByCategory[b] - expensesByCategory[a]
     );
     
-    // Советы
     const adviceList = [];
     
-    // 1. Сравнение доходов с предыдущим месяцем
     if (totalLastIncome > 0) {
       const incomeChange = ((totalCurrentIncome - totalLastIncome) / totalLastIncome) * 100;
       
@@ -131,7 +121,6 @@ const Advisor = () => {
       });
     }
     
-    // 3. Категория с самыми высокими расходами
     if (sortedCategoryIds.length > 0) {
       const topCategoryId = sortedCategoryIds[0];
       const topCategory = categories.find((c) => c.id === topCategoryId);
@@ -150,7 +139,6 @@ const Advisor = () => {
       }
     }
     
-    // 4. Советы по накоплениям
     if (totalCurrentIncome > 0 && (totalCurrentIncome - totalCurrentExpense) < totalCurrentIncome * 0.2) {
       adviceList.push({
         type: 'info',
@@ -160,9 +148,7 @@ const Advisor = () => {
       });
     }
     
-    // 5. Новый совет - всегда показываем, если нет других советов
     if (adviceList.length === 0 && totalCurrentExpense > 0) {
-      // Найдем наименьшую категорию расходов
       const smallestCategoryId = sortedCategoryIds[sortedCategoryIds.length - 1];
       const smallestCategory = categories.find((c) => c.id === smallestCategoryId);
       

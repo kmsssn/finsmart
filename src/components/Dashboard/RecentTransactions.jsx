@@ -90,7 +90,7 @@ const RecentTransactions = () => {
             {recentTransactions.map((transaction, index) => (
               <React.Fragment key={transaction.id}>
                 <tr 
-                  className="border-b hover:bg-gray-50 transition-all duration-300"
+                  className="border-b hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
                   style={{ animationDelay: `${index * 100}ms`, animation: 'fadeIn 0.5s ease-out' }}
                 >
                   <td className="py-3">{formatDate(transaction.date)}</td>

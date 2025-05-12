@@ -201,7 +201,7 @@ const Navbar = () => {
                 }
               `}
             >
-              <FaTags className="mr-2" /> Категории
+              <FaCog className="mr-2" /> Настройки
             </NavLink>
             <button
               onClick={handleLogout}
